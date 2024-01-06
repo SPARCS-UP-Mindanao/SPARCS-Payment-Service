@@ -1,0 +1,9 @@
+.DS_STORE
+.vscode
+.idea
+.serverless
+***__pycache__**
+venv
+node_modules
+.env
+.ruff_cache
