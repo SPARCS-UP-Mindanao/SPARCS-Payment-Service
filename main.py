@@ -1,18 +1,19 @@
 import os
 
 import lambdawarmer
-from controller.app_controller import api_controller
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from lambda_decorators import cors_headers
 from mangum import Mangum
+
+from controller.app_controller import api_controller
 
 STAGE = os.environ.get('STAGE')
 root_path = f'/{STAGE}' if STAGE else '/'
 
 app = FastAPI(
     root_path=root_path,
-    title='Serverless API',
+    title='TechTix Payment Service',
     contact={
         'name': 'Arnel Jan Sarmiento',
         'email': 'rneljan@gmail.com',
@@ -25,10 +26,10 @@ def welcome():
     html_content = """
     <html>
         <head>
-            <title>Serverless API</title>
+            <title>TechTix Payment Service</title>
         </head>
         <body>
-            <h1>Serverless API</h1>
+            <h1>TechTix Payment Service</h1>
         </body>
     </html>
     """

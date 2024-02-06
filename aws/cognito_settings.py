@@ -1,9 +1,10 @@
-import os 
+import os
 
-from constants.common_constants import UserRoles
 from fastapi import Depends, HTTPException
 from fastapi_cloudauth import Cognito
 from pydantic import BaseModel, Field
+
+from constants.common_constants import UserRoles
 
 
 class AccessUser(BaseModel):

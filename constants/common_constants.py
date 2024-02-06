@@ -1,6 +1,10 @@
 from enum import Enum
 
 
+class UserRoles(str, Enum):
+    ADMIN = 'admin'
+    SUPER_ADMIN = 'super_admin'
+
 
 class EntryStatus(str, Enum):
     ACTIVE = 'ACTIVE'

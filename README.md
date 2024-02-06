@@ -17,7 +17,7 @@ _Image credit to [Thang Chung under MIT terms](https://github.com/thangchung/blo
 ## Setup Local Environment
 
 1. **Pre-requisites:**
-   - Ensure Python 3.9 is installed
+   - Ensure Python 3.10 is installed
 
 2. **Install pipenv:**
    ```shell
