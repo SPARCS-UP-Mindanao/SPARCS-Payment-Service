@@ -1,3 +1,4 @@
+import os
 from pprint import pprint
 from uuid import uuid4
 
@@ -9,7 +10,7 @@ from xendit.customer.model.individual_detail import IndividualDetail
 
 
 def ewallet_payment_request():
-    xendit_api_key = 'xnd_development_kCZQnq8jmVHn3TmwExDuA2lH2TmWhlC4g2dSJnliUgVxdAkzNV9qdWqsDwem'
+    xendit_api_key = os.environ.get('XENDIT_API_KEY_SECRET')
 
     # See configuration.py for a list of all supported configuration parameters.
     xendit.set_api_key(xendit_api_key)
@@ -51,7 +52,7 @@ def ewallet_payment_request():
 
 
 def create_customer(email: str, given_names: str, surname: str, nationality: CountryCode):
-    xendit_api_key = 'xnd_development_kCZQnq8jmVHn3TmwExDuA2lH2TmWhlC4g2dSJnliUgVxdAkzNV9qdWqsDwem'
+    xendit_api_key = os.environ.get('XENDIT_API_KEY_SECRET')
 
     # See configuration.py for a list of all supported configuration parameters.
     xendit.set_api_key(xendit_api_key)
@@ -85,7 +86,7 @@ def create_customer(email: str, given_names: str, surname: str, nationality: Cou
 
 
 def create_payment_method(given_names: str, surname: str, email: str, success_return_url: str, failure_return_url: str):
-    xendit_api_key = 'xnd_development_kCZQnq8jmVHn3TmwExDuA2lH2TmWhlC4g2dSJnliUgVxdAkzNV9qdWqsDwem'
+    xendit_api_key = os.environ.get('XENDIT_API_KEY_SECRET')
 
     # See configuration.py for a list of all supported configuration parameters.
     xendit.set_api_key(xendit_api_key)
@@ -134,7 +135,7 @@ def create_payment_method(given_names: str, surname: str, email: str, success_re
 def direct_debit_payment(payment_method_id: str, callback_url: str):
     idempotency_key = str(uuid4())
     reference_id = str(uuid4())
-    xendit_api_key = 'xnd_development_kCZQnq8jmVHn3TmwExDuA2lH2TmWhlC4g2dSJnliUgVxdAkzNV9qdWqsDwem'
+    xendit_api_key = os.environ.get('XENDIT_API_KEY_SECRET')
 
     # See configuration.py for a list of all supported configuration parameters.
     xendit.set_api_key(xendit_api_key)

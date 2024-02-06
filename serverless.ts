@@ -46,12 +46,7 @@ const serverlessConfiguration: AWS = {
     "environment": {
       "REGION": "${self:provider.region}",
       "STAGE": "${self:custom.stage}",
-      "USER_POOL_ID": {
-        "!ImportValue": "UserPoolId-${self:custom.stage}"
-      },
-      "USER_POOL_CLIENT_ID": {
-        "!ImportValue": "AppClientId-${self:custom.stage}"
-      }
+      "XENDIT_API_KEY_SECRET_NAME": "${self:custom.stage}-xendit-api-key"
     },
     "logs": {
       "restApi": true

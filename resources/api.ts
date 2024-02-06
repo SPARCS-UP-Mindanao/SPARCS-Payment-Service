@@ -27,11 +27,10 @@ const functionConfig = {
           {
             "Effect": "Allow",
             "Action": [
-              "dynamodb:*"
+              "ssm:GetParameter"
             ],
-            "Resource": [
-              { "Fn::GetAtt": ["Entities", "Arn"] }
-            ]
+            "Resource":
+              "arn:aws:ssm:*:*:parameter/${self:custom.stage}-xendit-api-key"
           }
         ]
       }
