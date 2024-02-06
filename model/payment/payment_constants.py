@@ -1,7 +1,6 @@
 from enum import Enum
 
 
-
 class DirectDebitChannels(str, Enum):
     BPI = 'BPI'
     UBP = 'UBP'

@@ -1,25 +1,30 @@
 import os
-
-from model.payment.payment import (
-    CreateDirectDebitPaymentMethodIn, CreateDirectDebitPaymentMethodOut, DirectDebitPaymentIn, PaymentRequestOut,
-    EWalletPaymentIn
-)
+from http import HTTPStatus
 from uuid import uuid4
 
 import xendit
-from xendit.apis import PaymentMethodApi, PaymentRequestApi
-from utils.utils import Utils
-from utils.logger import logger
 from starlette.responses import JSONResponse
-from http import HTTPStatus
+from xendit.apis import PaymentMethodApi, PaymentRequestApi
+
+from model.payment.payment import (
+    CreateDirectDebitPaymentMethodIn,
+    CreateDirectDebitPaymentMethodOut,
+    DirectDebitPaymentIn,
+    EWalletPaymentIn,
+    PaymentRequestOut,
+)
+from utils.logger import logger
+from utils.utils import Utils
+
 
 class PaymentUsecase:
     def __init__(self) -> None:
         xendit_api_key_name = os.environ.get('XENDIT_API_KEY_SECRET_NAME')
-        self.__xendit_api_key= Utils.get_secret(xendit_api_key_name)
-    
+        self.__xendit_api_key = Utils.get_secret(xendit_api_key_name)
 
-    def create_direct_debit_payment_method(self, in_data: CreateDirectDebitPaymentMethodIn) -> CreateDirectDebitPaymentMethodOut:
+    def create_direct_debit_payment_method(
+        self, in_data: CreateDirectDebitPaymentMethodIn
+    ) -> CreateDirectDebitPaymentMethodOut:
         xendit.set_api_key(self.__xendit_api_key)
 
         api_client = xendit.ApiClient()
@@ -46,7 +51,7 @@ class PaymentUsecase:
                 },
             },
             'reusability': 'ONE_TIME_USE',
-        }  
+        }
 
         try:
             # Creates payment method
@@ -56,20 +61,15 @@ class PaymentUsecase:
                 create_date=api_response.created,
                 customer_id=api_response.customer_id,
                 payment_method_id=api_response.id,
-                reference_id=api_response.reference_id
+                reference_id=api_response.reference_id,
             )
 
         except xendit.XenditSdkException as e:
             message = f'Exception when calling PaymentMethodApi->create_payment_method: {str(e.errorMessage)}'
             logger.info(message)
 
-            return JSONResponse(
-                status_code=HTTPStatus.BAD_REQUEST, 
-                content={'message': message}
-            )
-            
-            
-    
+            return JSONResponse(status_code=HTTPStatus.BAD_REQUEST, content={'message': message})
+
     def direct_debit_payment_request(self, in_data: DirectDebitPaymentIn) -> PaymentRequestOut:
         xendit.set_api_key(self.__xendit_api_key)
 
@@ -94,27 +94,23 @@ class PaymentUsecase:
             api_response = api_instance.create_payment_request(
                 idempotency_key=idempotency_key, payment_request_parameters=payment_request_parameters
             )
-            
+
             return PaymentRequestOut(
                 create_date=api_response.created,
                 payment_url=api_response.actions[0].url,
                 payment_request_id=api_response.id,
-                reference_id=api_response.reference_id
+                reference_id=api_response.reference_id,
             )
-            
+
         except xendit.XenditSdkException as e:
-            message = f'Exception when calling PaymentRequestApi->create_payment_request: {e.errorMessage}' 
+            message = f'Exception when calling PaymentRequestApi->create_payment_request: {e.errorMessage}'
             logger.info(message)
 
-            return JSONResponse(
-                status_code=HTTPStatus.BAD_REQUEST, 
-                content={'message': message}
-            )
-    
-    
+            return JSONResponse(status_code=HTTPStatus.BAD_REQUEST, content={'message': message})
+
     def e_wallet_payment_request(self, in_data: EWalletPaymentIn) -> PaymentRequestOut:
-        xendit.set_api_key(self.__xendit_api_key) 
-        
+        xendit.set_api_key(self.__xendit_api_key)
+
         api_client = xendit.ApiClient()
         api_instance = PaymentRequestApi(api_client)
 
@@ -133,7 +129,7 @@ class PaymentUsecase:
                         'success_return_url': in_data.success_return_url,
                         'failure_return_url': in_data.failure_return_url,
                     },
-                    'channel_code': in_data.channel_code
+                    'channel_code': in_data.channel_code,
                 },
                 'reusability': 'ONE_TIME_USE',
             },
@@ -148,14 +144,11 @@ class PaymentUsecase:
                 create_date=api_response.created,
                 payment_url=api_response.actions[0].url,
                 payment_request_id=api_response.id,
-                reference_id=api_response.reference_id
+                reference_id=api_response.reference_id,
             )
-            
+
         except xendit.XenditSdkException as e:
             message = f'Exception when calling PaymentRequestApi->create_payment_request: {e.errorMessage}'
             logger.info(message)
-            
-            return JSONResponse(
-                status_code=HTTPStatus.BAD_REQUEST, 
-                content={'message': message}
-            )
+
+            return JSONResponse(status_code=HTTPStatus.BAD_REQUEST, content={'message': message})

@@ -1,8 +1,11 @@
 from fastapi import APIRouter
-from model.common import Message
 
+from model.common import Message
 from model.payment.payment import (
-    CreateDirectDebitPaymentMethodIn, CreateDirectDebitPaymentMethodOut, DirectDebitPaymentIn, PaymentRequestOut
+    CreateDirectDebitPaymentMethodIn,
+    CreateDirectDebitPaymentMethodOut,
+    DirectDebitPaymentIn,
+    PaymentRequestOut,
 )
 from usecase.payment_usecase import PaymentUsecase
 
@@ -26,13 +29,10 @@ direct_debit_router = APIRouter()
     include_in_schema=False,
 )
 def create_direct_debit_payment_method(
-   create_direct_debit_payment_method_in: CreateDirectDebitPaymentMethodIn,
+    create_direct_debit_payment_method_in: CreateDirectDebitPaymentMethodIn,
 ):
     payment_usecase = PaymentUsecase()
-    return payment_usecase.create_direct_debit_payment_method(
-        create_direct_debit_payment_method_in
-    )
-    
+    return payment_usecase.create_direct_debit_payment_method(create_direct_debit_payment_method_in)
 
 
 @direct_debit_router.post(
@@ -52,9 +52,7 @@ def create_direct_debit_payment_method(
     include_in_schema=False,
 )
 def direct_debit_payment_request(
-   direct_debit_payment_request_in: DirectDebitPaymentIn,
+    direct_debit_payment_request_in: DirectDebitPaymentIn,
 ):
     payment_usecase = PaymentUsecase()
-    return payment_usecase.direct_debit_payment_request(
-        direct_debit_payment_request_in
-    )
+    return payment_usecase.direct_debit_payment_request(direct_debit_payment_request_in)
