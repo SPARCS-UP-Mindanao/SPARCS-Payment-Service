@@ -128,6 +128,7 @@ class PaymentUsecase:
                     'channel_properties': {
                         'success_return_url': in_data.success_return_url,
                         'failure_return_url': in_data.failure_return_url,
+                        'cancel_return_url': in_data.cancel_return_url,
                     },
                     'channel_code': in_data.channel_code,
                 },

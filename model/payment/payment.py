@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, EmailStr, Extra, Field
 
@@ -54,6 +55,7 @@ class EWalletPaymentIn(BaseModel):
 
     success_return_url: str = Field(..., title='Success Return URL')
     failure_return_url: str = Field(..., title='Failure Return URL')
+    cancel_return_url: Optional[str] = Field(None, title='Cancel Return URL')
     reference_id: str = Field(..., title='Reference ID')
     amount: float = Field(..., title='Amount')
     channel_code: EWalletChannels = Field(..., title='Channel Code')
