@@ -1,7 +1,10 @@
 from fastapi import APIRouter
 
 from model.common import Message
-from model.transaction.transaction import GetTransactionDetailsIn, GetTransactionDetailsOut
+from model.transaction.transaction import (
+    GetTransactionDetailsIn,
+    GetTransactionDetailsOut,
+)
 from usecase.transaction_usecase import TransactionUsecase
 
 transaction_router = APIRouter()
@@ -27,6 +30,4 @@ def get_transaction_details(
     transaction_details_in: GetTransactionDetailsIn,
 ):
     transaction_usecase = TransactionUsecase()
-    return transaction_usecase.get_transaction_details(
-        transaction_details_in
-    )
+    return transaction_usecase.get_transaction_details(transaction_details_in)
