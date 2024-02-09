@@ -4,11 +4,9 @@ from uuid import uuid4
 
 import xendit
 from starlette.responses import JSONResponse
-from xendit.apis import PaymentMethodApi, PaymentRequestApi
+from xendit.apis import PaymentRequestApi
 
 from model.payment.payment import (
-    CreateDirectDebitPaymentMethodIn,
-    CreateDirectDebitPaymentMethodOut,
     DirectDebitPaymentIn,
     EWalletPaymentIn,
     PaymentRequestOut,
@@ -22,14 +20,14 @@ class PaymentUsecase:
         xendit_api_key_name = os.environ.get('XENDIT_API_KEY_SECRET_NAME')
         self.__xendit_api_key = Utils.get_secret(xendit_api_key_name)
 
-    def create_direct_debit_payment_method(
-        self, in_data: CreateDirectDebitPaymentMethodIn
-    ) -> CreateDirectDebitPaymentMethodOut:
+    def direct_debit_payment_request(self, in_data: DirectDebitPaymentIn) -> PaymentRequestOut:
         xendit.set_api_key(self.__xendit_api_key)
 
         api_client = xendit.ApiClient()
-        api_instance = PaymentMethodApi(api_client)
 
+        api_instance = PaymentRequestApi(api_client)
+
+        idempotency_key = str(uuid4())
         reference_id = str(uuid4())
 
         payment_method_parameters = {
@@ -42,6 +40,15 @@ class PaymentUsecase:
                     'email': in_data.email,
                 },
             },
+            'reusability': 'ONE_TIME_USE',
+        }
+
+        payment_request_parameters = {
+            'reference_id': reference_id,
+            'amount': in_data.amount,
+            'currency': 'PHP',
+            'payment_method': payment_method_parameters,
+            'enable_otp': False,
             'customer': {
                 'reference_id': reference_id,
                 'type': 'INDIVIDUAL',
@@ -50,43 +57,6 @@ class PaymentUsecase:
                     'surname': in_data.surname,
                 },
             },
-            'reusability': 'ONE_TIME_USE',
-        }
-
-        try:
-            # Creates payment method
-            api_response = api_instance.create_payment_method(payment_method_parameters=payment_method_parameters)
-            return CreateDirectDebitPaymentMethodOut(
-                allow_payment_url=api_response.actions[0].url,
-                create_date=api_response.created,
-                customer_id=api_response.customer_id,
-                payment_method_id=api_response.id,
-                reference_id=api_response.reference_id,
-            )
-
-        except xendit.XenditSdkException as e:
-            message = f'Exception when calling PaymentMethodApi->create_payment_method: {str(e.errorMessage)}'
-            logger.info(message)
-
-            return JSONResponse(status_code=HTTPStatus.BAD_REQUEST, content={'message': message})
-
-    def direct_debit_payment_request(self, in_data: DirectDebitPaymentIn) -> PaymentRequestOut:
-        xendit.set_api_key(self.__xendit_api_key)
-
-        api_client = xendit.ApiClient()
-
-        api_instance = PaymentRequestApi(api_client)
-
-        idempotency_key = str(uuid4())
-        reference_id = in_data.reference_id
-
-        payment_request_parameters = {
-            'reference_id': reference_id,
-            'amount': in_data.amount,
-            'currency': 'PHP',
-            'payment_method_id': in_data.payment_method_id,
-            'enable_otp': False,
-            'callback_url': in_data.callback_url,
         }
 
         try:
