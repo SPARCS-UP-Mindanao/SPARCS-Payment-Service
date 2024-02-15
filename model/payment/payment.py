@@ -11,31 +11,31 @@ class DirectDebitPaymentIn(BaseModel):
         extra = Extra.forbid
 
     amount: float = Field(..., title='Amount')
-    given_names: str = Field(..., title='Given Names')
+    givenNames: str = Field(..., title='Given Names')
     surname: str = Field(..., title='Surnames')
     email: EmailStr = Field(..., title='Email')
-    channel_code: DirectDebitChannels = Field(..., title='Channel Code')
-    success_return_url: str = Field(..., title='Success Return URL')
-    failure_return_url: str = Field(..., title='Failure Return URL')
+    channelCode: DirectDebitChannels = Field(..., title='Channel Code')
+    successReturnUrl: str = Field(..., title='Success Return URL')
+    failureReturnUrl: str = Field(..., title='Failure Return URL')
 
 
 class PaymentRequestOut(BaseModel):
     class Config:
         extra = Extra.ignore
 
-    create_date: datetime = Field(..., title='Updated Date')
-    payment_url: str = Field(..., title='Payment URL')
-    payment_request_id: str = Field(..., title='Payment Request ID')
-    reference_id: str = Field(..., title='Reference ID')
+    createDate: datetime = Field(..., title='Updated Date')
+    paymentUrl: str = Field(..., title='Payment URL')
+    paymentRequestId: str = Field(..., title='Payment Request ID')
+    referenceId: str = Field(..., title='Reference ID')
 
 
 class EWalletPaymentIn(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    success_return_url: str = Field(..., title='Success Return URL')
-    failure_return_url: str = Field(..., title='Failure Return URL')
-    cancel_return_url: Optional[str] = Field(None, title='Cancel Return URL')
-    reference_id: str = Field(..., title='Reference ID')
+    successReturnUrl: str = Field(..., title='Success Return URL')
+    failureReturnUrl: str = Field(..., title='Failure Return URL')
+    cancelReturnUrl: Optional[str] = Field(None, title='Cancel Return URL')
+    referenceId: str = Field(..., title='Reference ID')
     amount: float = Field(..., title='Amount')
-    channel_code: EWalletChannels = Field(..., title='Channel Code')
+    channelCode: EWalletChannels = Field(..., title='Channel Code')

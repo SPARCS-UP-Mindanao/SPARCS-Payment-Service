@@ -28,15 +28,15 @@ class PaymentUsecase:
         api_instance = PaymentRequestApi(api_client)
 
         idempotency_key = str(uuid4())
-        reference_id = str(uuid4())
+        referenceId = str(uuid4())
 
         payment_method_parameters = {
             'type': 'DIRECT_DEBIT',
             'direct_debit': {
-                'channel_code': in_data.channel_code,
+                'channelCode': in_data.channelCode,
                 'channel_properties': {
-                    'success_return_url': in_data.success_return_url,
-                    'failure_return_url': in_data.failure_return_url,
+                    'successReturnUrl': in_data.successReturnUrl,
+                    'failureReturnUrl': in_data.failureReturnUrl,
                     'email': in_data.email,
                 },
             },
@@ -44,16 +44,16 @@ class PaymentUsecase:
         }
 
         payment_request_parameters = {
-            'reference_id': reference_id,
+            'referenceId': referenceId,
             'amount': in_data.amount,
             'currency': 'PHP',
             'payment_method': payment_method_parameters,
             'enable_otp': False,
             'customer': {
-                'reference_id': reference_id,
+                'referenceId': referenceId,
                 'type': 'INDIVIDUAL',
                 'individual_detail': {
-                    'given_names': in_data.given_names,
+                    'givenNames': in_data.givenNames,
                     'surname': in_data.surname,
                 },
             },
@@ -66,10 +66,10 @@ class PaymentUsecase:
             )
 
             return PaymentRequestOut(
-                create_date=api_response.created,
-                payment_url=api_response.actions[0].url,
-                payment_request_id=api_response.id,
-                reference_id=api_response.reference_id,
+                createDate=api_response.created,
+                paymentUrl=api_response.actions[0].url,
+                paymentRequestId=api_response.id,
+                referenceId=api_response.referenceId,
             )
 
         except xendit.XenditSdkException as e:
@@ -85,22 +85,22 @@ class PaymentUsecase:
         api_instance = PaymentRequestApi(api_client)
 
         idempotency_key = str(uuid4())
-        reference_id = in_data.reference_id
+        referenceId = in_data.referenceId
 
         payment_request_parameters = {
             'country': 'PH',
             'amount': in_data.amount,
             'currency': 'PHP',
-            'reference_id': reference_id,
+            'referenceId': referenceId,
             'payment_method': {
                 'type': 'EWALLET',
                 'ewallet': {
                     'channel_properties': {
-                        'success_return_url': in_data.success_return_url,
-                        'failure_return_url': in_data.failure_return_url,
-                        'cancel_return_url': in_data.cancel_return_url,
+                        'successReturnUrl': in_data.successReturnUrl,
+                        'failureReturnUrl': in_data.failureReturnUrl,
+                        'cancelReturnUrl': in_data.cancelReturnUrl,
                     },
-                    'channel_code': in_data.channel_code,
+                    'channelCode': in_data.channelCode,
                 },
                 'reusability': 'ONE_TIME_USE',
             },
@@ -112,10 +112,10 @@ class PaymentUsecase:
                 idempotency_key=idempotency_key, payment_request_parameters=payment_request_parameters
             )
             return PaymentRequestOut(
-                create_date=api_response.created,
-                payment_url=api_response.actions[0].url,
-                payment_request_id=api_response.id,
-                reference_id=api_response.reference_id,
+                createDate=api_response.created,
+                paymentUrl=api_response.actions[0].url,
+                paymentRequestId=api_response.id,
+                referenceId=api_response.referenceId,
             )
 
         except xendit.XenditSdkException as e:
