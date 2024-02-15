@@ -66,10 +66,10 @@ class PaymentUsecase:
             )
 
             return PaymentRequestOut(
-                create_date=api_response.created,
-                payment_url=api_response.actions[0].url,
-                payment_request_id=api_response.id,
-                reference_id=api_response.reference_id,
+                createDate=api_response.created,
+                paymentUrl=api_response.actions[0].url,
+                paymentRequestId=api_response.id,
+                referenceId=api_response.reference_id,
             )
 
         except xendit.XenditSdkException as e:
@@ -112,10 +112,10 @@ class PaymentUsecase:
                 idempotency_key=idempotency_key, payment_request_parameters=payment_request_parameters
             )
             return PaymentRequestOut(
-                create_date=api_response.created,
-                payment_url=api_response.actions[0].url,
-                payment_request_id=api_response.id,
-                reference_id=api_response.reference_id,
+                createDate=api_response.created,
+                paymentUrl=api_response.actions[0].url,
+                paymentRequestId=api_response.id,
+                referenceId=api_response.reference_id,
             )
 
         except xendit.XenditSdkException as e:
