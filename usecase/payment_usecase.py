@@ -28,15 +28,15 @@ class PaymentUsecase:
         api_instance = PaymentRequestApi(api_client)
 
         idempotency_key = str(uuid4())
-        referenceId = str(uuid4())
+        reference_id = str(uuid4())
 
         payment_method_parameters = {
             'type': 'DIRECT_DEBIT',
             'direct_debit': {
-                'channelCode': in_data.channelCode,
+                'channel_code': in_data.channelCode,
                 'channel_properties': {
-                    'successReturnUrl': in_data.successReturnUrl,
-                    'failureReturnUrl': in_data.failureReturnUrl,
+                    'success_return_url': in_data.successReturnUrl,
+                    'failure_return_url': in_data.failureReturnUrl,
                     'email': in_data.email,
                 },
             },
@@ -44,16 +44,16 @@ class PaymentUsecase:
         }
 
         payment_request_parameters = {
-            'referenceId': referenceId,
+            'reference_id': reference_id,
             'amount': in_data.amount,
             'currency': 'PHP',
             'payment_method': payment_method_parameters,
             'enable_otp': False,
             'customer': {
-                'referenceId': referenceId,
+                'reference_id': reference_id,
                 'type': 'INDIVIDUAL',
                 'individual_detail': {
-                    'givenNames': in_data.givenNames,
+                    'given_names': in_data.givenNames,
                     'surname': in_data.surname,
                 },
             },
@@ -66,10 +66,10 @@ class PaymentUsecase:
             )
 
             return PaymentRequestOut(
-                createDate=api_response.created,
-                paymentUrl=api_response.actions[0].url,
-                paymentRequestId=api_response.id,
-                referenceId=api_response.referenceId,
+                create_date=api_response.created,
+                payment_url=api_response.actions[0].url,
+                payment_request_id=api_response.id,
+                reference_id=api_response.reference_id,
             )
 
         except xendit.XenditSdkException as e:
@@ -85,22 +85,22 @@ class PaymentUsecase:
         api_instance = PaymentRequestApi(api_client)
 
         idempotency_key = str(uuid4())
-        referenceId = in_data.referenceId
+        reference_id = in_data.referenceId
 
         payment_request_parameters = {
             'country': 'PH',
             'amount': in_data.amount,
             'currency': 'PHP',
-            'referenceId': referenceId,
+            'reference_id': reference_id,
             'payment_method': {
                 'type': 'EWALLET',
                 'ewallet': {
                     'channel_properties': {
-                        'successReturnUrl': in_data.successReturnUrl,
-                        'failureReturnUrl': in_data.failureReturnUrl,
-                        'cancelReturnUrl': in_data.cancelReturnUrl,
+                        'success_return_url': in_data.successReturnUrl,
+                        'failure_return_url': in_data.failureReturnUrl,
+                        'cancel_return_url': in_data.cancelReturnUrl,
                     },
-                    'channelCode': in_data.channelCode,
+                    'channel_code': in_data.channelCode,
                 },
                 'reusability': 'ONE_TIME_USE',
             },
@@ -112,10 +112,10 @@ class PaymentUsecase:
                 idempotency_key=idempotency_key, payment_request_parameters=payment_request_parameters
             )
             return PaymentRequestOut(
-                createDate=api_response.created,
-                paymentUrl=api_response.actions[0].url,
-                paymentRequestId=api_response.id,
-                referenceId=api_response.referenceId,
+                create_date=api_response.created,
+                payment_url=api_response.actions[0].url,
+                payment_request_id=api_response.id,
+                reference_id=api_response.reference_id,
             )
 
         except xendit.XenditSdkException as e:

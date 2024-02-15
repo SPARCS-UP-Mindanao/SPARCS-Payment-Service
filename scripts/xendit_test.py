@@ -22,20 +22,20 @@ def ewallet_payment_request():
     # Create an instance of the API class
     api_instance = PaymentRequestApi(api_client)
     idempotency_key = str(uuid4())
-    referenceId = str(uuid4())
+    reference_id = str(uuid4())
     payment_request_parameters = {
         'country': 'PH',
         'amount': 50,
         'currency': 'PHP',
-        'referenceId': referenceId,
+        'reference_id': reference_id,
         'payment_method': {
             'type': 'EWALLET',
             'ewallet': {
                 'channel_properties': {
-                    'successReturnUrl': 'http://localhost:5173',
-                    'failureReturnUrl': 'http://localhost:5173',
+                    'success_return_url': 'http://localhost:5173',
+                    'failure_return_url': 'http://localhost:5173',
                 },
-                'channelCode': 'GCASH',
+                'channel_code': 'GCASH',
             },
             'reusability': 'ONE_TIME_USE',
         },
@@ -51,7 +51,7 @@ def ewallet_payment_request():
         print('Exception when calling PaymentRequestApi->create_payment_request: %s\n' % e)
 
 
-def create_customer(email: str, givenNames: str, surname: str, nationality: CountryCode):
+def create_customer(email: str, given_names: str, surname: str, nationality: CountryCode):
     xendit_api_key = os.environ.get('XENDIT_API_KEY_SECRET')
 
     # See configuration.py for a list of all supported configuration parameters.
@@ -61,15 +61,15 @@ def create_customer(email: str, givenNames: str, surname: str, nationality: Coun
     api_client = xendit.ApiClient()
 
     idempotency_key = str(uuid4())
-    referenceId = str(uuid4())
+    reference_id = str(uuid4())
 
     # Create an instance of the API class
     api_instance = CustomerApi(api_client)
     customer_request = CustomerRequest(
-        referenceId=referenceId,
+        reference_id=reference_id,
         email=email,
         type='INDIVIDUAL',
-        individual_detail=IndividualDetail(givenNames=givenNames, surname=surname, nationality=nationality),
+        individual_detail=IndividualDetail(given_names=given_names, surname=surname, nationality=nationality),
     )
 
     try:
@@ -85,13 +85,13 @@ def create_customer(email: str, givenNames: str, surname: str, nationality: Coun
     return None
 
 
-def create_payment_method(givenNames: str, surname: str, email: str, successReturnUrl: str, failureReturnUrl: str):
+def create_payment_method(given_names: str, surname: str, email: str, success_return_url: str, failure_return_url: str):
     xendit_api_key = os.environ.get('XENDIT_API_KEY_SECRET')
 
     # See configuration.py for a list of all supported configuration parameters.
     xendit.set_api_key(xendit_api_key)
 
-    referenceId = str(uuid4())
+    reference_id = str(uuid4())
 
     # Enter a context with an instance of the API client
     api_client = xendit.ApiClient()
@@ -101,18 +101,18 @@ def create_payment_method(givenNames: str, surname: str, email: str, successRetu
     payment_method_parameters = {
         'type': 'DIRECT_DEBIT',
         'direct_debit': {
-            'channelCode': 'BPI',
+            'channel_code': 'BPI',
             'channel_properties': {
-                'successReturnUrl': 'https://redirect.me/success',
-                'failureReturnUrl': 'https://redirect.me/failure',
+                'success_return_url': 'https://redirect.me/success',
+                'failure_return_url': 'https://redirect.me/failure',
                 'email': email,
             },
         },
         'customer': {
-            'referenceId': referenceId,
+            'reference_id': reference_id,
             'type': 'INDIVIDUAL',
             'individual_detail': {
-                'givenNames': givenNames,
+                'given_names': given_names,
                 'surname': surname,
             },
         },
@@ -134,7 +134,7 @@ def create_payment_method(givenNames: str, surname: str, email: str, successRetu
 
 def direct_debit_payment(payment_method_id: str, callback_url: str):
     idempotency_key = str(uuid4())
-    referenceId = str(uuid4())
+    reference_id = str(uuid4())
     xendit_api_key = os.environ.get('XENDIT_API_KEY_SECRET')
 
     # See configuration.py for a list of all supported configuration parameters.
@@ -146,7 +146,7 @@ def direct_debit_payment(payment_method_id: str, callback_url: str):
     # Create an instance of the API class
     api_instance = PaymentRequestApi(api_client)
     payment_request_parameters = {
-        'referenceId': referenceId,
+        'reference_id': reference_id,
         'amount': 50,
         'currency': 'PHP',
         'payment_method_id': payment_method_id,
@@ -169,16 +169,16 @@ def main():
 
     # create_customer(
     #     email="rneljan@gmail.com",
-    #     givenNames="Rnel",
+    #     given_names="Rnel",
     #     surname="Jan",
     #     nationality=CountryCode("PH")
 
     # create_payment_method(
-    #     givenNames='Rnel',
+    #     given_names='Rnel',
     #     surname='Jan',
     #     email='rneljan@gmail.com',
-    #     successReturnUrl='http://localhost:5173',
-    #     failureReturnUrl='http://localhost:5173',
+    #     success_return_url='http://localhost:5173',
+    #     failure_return_url='http://localhost:5173',
     # )
     # direct_debit_payment('pm-fd8b1cd5-6002-4eb0-8b9e-41faac5d36fa', 'http://localhost:5173')
 
