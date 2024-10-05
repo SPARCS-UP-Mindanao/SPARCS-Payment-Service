@@ -1,11 +1,12 @@
-import requests
 import os
+from http import HTTPStatus
+from typing import Tuple
+
+import requests
 
 from model.payment.payment import PaymentTransactionIn, PaymentTransactionOut
 from utils.logger import logger
 
-from typing import Tuple
-from http import HTTPStatus
 
 class PaymentStorageGateway:
     def __init__(self):
@@ -15,10 +16,7 @@ class PaymentStorageGateway:
     def create_payment(self, payment: PaymentTransactionIn) -> Tuple[HTTPStatus, PaymentTransactionOut, str]:
         try:
             payment_dict = payment.dict()
-            response = requests.post(
-                self.__create_payment_url,
-                json=payment_dict
-            )
+            response = requests.post(self.__create_payment_url, json=payment_dict)
             result = response.json()
             if response.status_code != HTTPStatus.OK:
                 return response.status_code, None, result
