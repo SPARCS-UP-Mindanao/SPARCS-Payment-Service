@@ -6,10 +6,13 @@ import xendit
 from starlette.responses import JSONResponse
 from xendit.apis import PaymentRequestApi
 
+from external.payment_storage_gateway import PaymentStorageGateway
 from model.payment.payment import (
     DirectDebitPaymentIn,
     EWalletPaymentIn,
     PaymentRequestOut,
+    PaymentTransactionIn,
+    TransactionStatus,
 )
 from utils.logger import logger
 from utils.utils import Utils
@@ -19,6 +22,9 @@ class PaymentUsecase:
     def __init__(self) -> None:
         xendit_api_key_name = os.environ.get('XENDIT_API_KEY_SECRET_NAME')
         self.__xendit_api_key = Utils.get_secret(xendit_api_key_name)
+        self.__callback_base_url = os.environ.get('CALLBACK_BASE_URL')
+        self.__xendit_callback_url = f'{self.__callback_base_url}/payments/callback'
+        self.__payment_storage_gateway = PaymentStorageGateway()
 
     def direct_debit_payment_request(self, in_data: DirectDebitPaymentIn) -> PaymentRequestOut:
         xendit.set_api_key(self.__xendit_api_key)
@@ -27,15 +33,25 @@ class PaymentUsecase:
 
         api_instance = PaymentRequestApi(api_client)
 
+        payment_transaction_in = PaymentTransactionIn(
+            price=in_data.amount,
+            transactionStatus=TransactionStatus.PENDING,
+            eventId=in_data.eventId,
+        )
+        status, payment, message = self.__payment_storage_gateway.create_payment(payment_transaction_in)
+        if status != HTTPStatus.OK:
+            return JSONResponse(status_code=status, content={'message': message})
+
         idempotency_key = str(uuid4())
         reference_id = str(uuid4())
+        transaction_id = payment.entryId
 
         payment_method_parameters = {
             'type': 'DIRECT_DEBIT',
             'direct_debit': {
                 'channel_code': in_data.channelCode,
                 'channel_properties': {
-                    'success_return_url': in_data.successReturnUrl,
+                    'success_return_url': f'{self.__xendit_callback_url}?eventId={in_data.eventId}&paymentTransactionId={transaction_id}j',
                     'failure_return_url': in_data.failureReturnUrl,
                     'email': in_data.email,
                 },
@@ -86,6 +102,16 @@ class PaymentUsecase:
 
         idempotency_key = str(uuid4())
         reference_id = in_data.referenceId
+        payment_transaction_in = PaymentTransactionIn(
+            price=in_data.amount,
+            transactionStatus=TransactionStatus.PENDING,
+            eventId=in_data.eventId,
+        )
+        status, payment, message = self.__payment_storage_gateway.create_payment(payment_transaction_in)
+        if status != HTTPStatus.OK:
+            return JSONResponse(status_code=status, content={'message': message})
+
+        transaction_id = payment.entryId
 
         payment_request_parameters = {
             'country': 'PH',
@@ -96,7 +122,7 @@ class PaymentUsecase:
                 'type': 'EWALLET',
                 'ewallet': {
                     'channel_properties': {
-                        'success_return_url': in_data.successReturnUrl,
+                        'success_return_url': f'{self.__xendit_callback_url}?eventId={in_data.eventId}&paymentTransactionId={transaction_id}',
                         'failure_return_url': in_data.failureReturnUrl,
                         'cancel_return_url': in_data.cancelReturnUrl,
                     },
