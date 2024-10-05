@@ -17,6 +17,7 @@ pydantic = {version = "<2", extras = ["email"]}
 lambda-decorators = "==0.6.0"
 xendit-python = {git = "https://github.com/xendit/xendit-python.git"}
 sympy = "==1.12"
+requests = "==2.32.3"
 
 [dev-packages]
 boto3 = "==1.22.7"
