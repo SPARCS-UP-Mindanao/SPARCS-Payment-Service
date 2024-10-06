@@ -11,7 +11,6 @@ const serverlessConfiguration: AWS = {
     "pythonRequirements": {
       "dockerizePip": "non-linux",
       "noDeploy": [
-        "requests",
         "boto3",
         "botocore"
       ],
