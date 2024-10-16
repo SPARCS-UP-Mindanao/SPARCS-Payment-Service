@@ -51,7 +51,7 @@ class PaymentUsecase:
             'direct_debit': {
                 'channel_code': in_data.channelCode,
                 'channel_properties': {
-                    'success_return_url': f'{self.__xendit_callback_url}?eventId={in_data.eventId}&paymentTransactionId={transaction_id}j',
+                    'success_return_url': f'{self.__xendit_callback_url}?eventId={in_data.eventId}&paymentTransactionId={transaction_id}',
                     'failure_return_url': in_data.failureReturnUrl,
                     'email': in_data.email,
                 },
