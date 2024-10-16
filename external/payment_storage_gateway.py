@@ -21,6 +21,7 @@ class PaymentStorageGateway:
             if response.status_code != HTTPStatus.OK:
                 return response.status_code, None, result
 
+            logger.info('Payment Transaction Successfully Added')
             return HTTPStatus.OK, PaymentTransactionOut(**result), None
 
         except Exception as e:
