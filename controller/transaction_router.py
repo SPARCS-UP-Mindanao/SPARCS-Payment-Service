@@ -15,6 +15,7 @@ transaction_router = APIRouter()
     response_model=GetTransactionDetailsOut,
     responses={
         400: {'model': Message, 'description': 'Bad request'},
+        422: {'model': Message, 'description': 'Unprocessable Entity'},
         500: {'model': Message, 'description': 'Internal server error'},
     },
     summary='Get Transaction total for fees',

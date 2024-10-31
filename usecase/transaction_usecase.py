@@ -1,4 +1,5 @@
 from decimal import Decimal
+from fastapi.responses import JSONResponse
 from sympy import Eq, solve, symbols
 
 from model.payment.payment_constants import EWalletChannels, PaymentMethod
@@ -32,6 +33,9 @@ class TransactionUsecase:
 
             is_fee_greater_than_default = ticket_price > min_ticket_price_for_default
             transaction_fee = (P * transaction_fee_percentage) if is_fee_greater_than_default else default_fee
+
+        else:
+            return JSONResponse(status_code=422, content={'message': 'Invalid payment method was passed.'})
 
         equation = Eq(P - transaction_fee - (transaction_fee * vat), ticket_price)
 
