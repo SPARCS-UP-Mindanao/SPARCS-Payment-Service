@@ -18,8 +18,8 @@ class GetTransactionDetailsIn(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    platform_fee: Optional[Price] = None
     ticket_price: Price
+    platform_fee: Optional[Price] = Field(None, description='Percent platform fee')
     payment_method: PaymentMethod = Field(..., title='Payment Method')
     payment_channel: Union[DirectDebitChannels, EWalletChannels] = Field(..., title='Payment Channel')
 
@@ -30,5 +30,5 @@ class GetTransactionDetailsOut(BaseModel):
 
     ticket_price: Price
     transaction_fee: Price
-    total_price: Price
     platform_fee: Optional[Price] = None
+    total_price: Price

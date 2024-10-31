@@ -12,8 +12,9 @@ from model.transaction.transaction import (
 class TransactionUsecase:
     def get_transaction_details(self, get_transaction_details_in: GetTransactionDetailsIn):
         e_wallet_fee_map = {EWalletChannels.GCASH.value: 0.023, EWalletChannels.PAYMAYA.value: 0.018}
-        platform_fee = get_transaction_details_in.platform_fee or Decimal(0.00)  # resolve None to 0
-        ticket_price = get_transaction_details_in.ticket_price + platform_fee
+        platform_percent = get_transaction_details_in.platform_fee or Decimal(0.00)  # resolve None to 0
+        ticket_price = get_transaction_details_in.ticket_price
+        platform_fee = platform_percent / 100 * ticket_price  # platform fee is a percent of ticket price
 
         vat = 0.12
 
@@ -40,8 +41,8 @@ class TransactionUsecase:
         equation = Eq(P - transaction_fee - (transaction_fee * vat), ticket_price)
 
         # Solve the equation for P
-        total_price = solve(equation, P)[0]
-        transaction_fee = total_price - ticket_price
+        total_price = solve(equation, P)[0] + platform_fee
+        transaction_fee = total_price - ticket_price - platform_fee
 
         return GetTransactionDetailsOut(
             ticket_price=round(ticket_price, 2),
