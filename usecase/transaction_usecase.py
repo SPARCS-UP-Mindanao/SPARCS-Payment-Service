@@ -46,9 +46,12 @@ class TransactionUsecase:
         total_price = solve(equation, P)[0]
         transaction_fee = total_price - ticket_price
 
+        # remove key if 0
+        platform_fee = None if platform_fee <= 0 else round(platform_fee, 2)
+
         return GetTransactionDetailsOut(
             ticket_price=round(initial_ticket_price, 2),
             total_price=round(total_price, 2),
-            platform_fee=round(platform_fee, 2),
+            platform_fee=platform_fee,
             transaction_fee=round(transaction_fee, 2),
         )
