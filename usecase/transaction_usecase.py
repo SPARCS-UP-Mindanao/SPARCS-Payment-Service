@@ -1,3 +1,4 @@
+from decimal import Decimal
 from sympy import Eq, solve, symbols
 
 from model.payment.payment_constants import EWalletChannels, PaymentMethod
@@ -10,7 +11,9 @@ from model.transaction.transaction import (
 class TransactionUsecase:
     def get_transaction_details(self, get_transaction_details_in: GetTransactionDetailsIn):
         e_wallet_fee_map = {EWalletChannels.GCASH.value: 0.023, EWalletChannels.PAYMAYA.value: 0.018}
-        ticket_price = get_transaction_details_in.ticket_price
+        platform_fee = get_transaction_details_in.platform_fee or Decimal(0.00)  # resolve None to 0
+        ticket_price = get_transaction_details_in.ticket_price + platform_fee
+
         vat = 0.12
 
         # Define the symbol P (the price we want to find)
@@ -39,5 +42,6 @@ class TransactionUsecase:
         return GetTransactionDetailsOut(
             ticket_price=round(ticket_price, 2),
             total_price=round(total_price, 2),
+            platform_fee=round(platform_fee, 2),
             transaction_fee=round(transaction_fee, 2),
         )
