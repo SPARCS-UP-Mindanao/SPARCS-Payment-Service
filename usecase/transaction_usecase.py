@@ -15,7 +15,7 @@ class TransactionUsecase:
         platform_percent = get_transaction_details_in.platform_fee or Decimal(0.00)  # resolve None to 0
 
         initial_ticket_price = get_transaction_details_in.ticket_price
-        platform_fee = platform_percent / 100 * initial_ticket_price  # platform fee is a percent of ticket price
+        platform_fee = platform_percent * initial_ticket_price  # platform fee is a percent of ticket price
         ticket_price = initial_ticket_price + platform_fee
 
         vat = 0.12
