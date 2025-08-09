@@ -1,6 +1,6 @@
 import type { AWS } from '@serverless/typescript';
-import packageConfig from "./resources/package";
-import functionConfig from "./resources/api";
+import packageConfig from "./resources/package.ts";
+import functionConfig from "./resources/api.ts";
 
 const serverlessConfiguration: AWS = {
   "service": "techtix-payment",
@@ -19,7 +19,7 @@ const serverlessConfiguration: AWS = {
         "compatibleRuntimes": [
           "python3.10"
         ],
-        "slim": true
+      "slim": true
       }
     }
   },
@@ -52,11 +52,14 @@ const serverlessConfiguration: AWS = {
       "restApi": true
     }
   },
-  "functions": functionConfig,
+  "functions": {
+    ...functionConfig
+  },
   "plugins": [
+    "serverless-better-credentials",
     "serverless-python-requirements",
     "serverless-iam-roles-per-function"
   ]
 }
 
-module.exports = serverlessConfiguration;
+export = serverlessConfiguration;

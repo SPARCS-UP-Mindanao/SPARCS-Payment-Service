@@ -1,1 +1,16 @@
-{"name":"databaseless-api","description":"","version":"0.1.0","devDependencies":{"@serverless/typescript":"^3.38.0","serverless-iam-roles-per-function":"^3.2.0","serverless-python-requirements":"^6.0.0"},"dependencies":{"ts-node":"^10.9.2"}}
+{
+  "name": "databaseless-api",
+  "description": "",
+  "version": "0.1.0",
+  "devDependencies": {
+    "@serverless/typescript": "^3.38.0",
+    "serverless": "^3.40.0",
+    "serverless-better-credentials": "^2.0.1",
+    "serverless-iam-roles-per-function": "^3.2.0",
+    "serverless-python-requirements": "^6.1.2",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "ts-node": "^10.9.2"
+  }
+}
