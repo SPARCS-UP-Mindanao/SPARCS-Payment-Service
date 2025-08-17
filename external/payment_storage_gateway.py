@@ -33,9 +33,6 @@ class PaymentStorageGateway:
         """
         Get pending payment transactions
 
-        Args:
-            event_id (str): The event ID to query pending payments for
-
         Returns:
             Tuple[HTTPStatus, list[PaymentTransactionOut], str]: Status code, list of payments, error message
         """
