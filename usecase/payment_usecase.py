@@ -15,6 +15,7 @@ from model.payment.payment import (
     PaymentTransactionIn,
     TransactionStatus,
 )
+from model.registrations.registration import Registration
 from utils.logger import logger
 from utils.utils import Utils
 
@@ -27,14 +28,26 @@ class PaymentUsecase:
         self.__xendit_callback_url = f'{self.__callback_base_url}/payments/callback'
         self.__payment_storage_gateway = PaymentStorageGateway()
 
-    def direct_debit_payment_request(self, in_data: DirectDebitPaymentIn) -> PaymentRequestOut:
+        # Initialize Xendit API Client
         xendit.set_api_key(self.__xendit_api_key)
-
         api_client = xendit.ApiClient()
+        self.xendit_api_instance = PaymentRequestApi(api_client)
 
-        api_instance = PaymentRequestApi(api_client)
+    def direct_debit_payment_request(
+        self, in_data: DirectDebitPaymentIn, registration: Registration
+    ) -> PaymentRequestOut:
+        """
+        Create a direct debit payment request
 
+        Arguments:
+            in_data -- Direct debit payment request data
+            registration -- Registration data
+
+        Returns:
+            PaymentRequestOut -- Payment request details
+        """
         payment_transaction_in = PaymentTransactionIn(
+            registrationData=registration,
             price=in_data.amount,
             transactionStatus=TransactionStatus.PENDING,
             eventId=in_data.eventId,
@@ -45,14 +58,14 @@ class PaymentUsecase:
 
         idempotency_key = str(uuid4())
         reference_id = str(uuid4())
-        transaction_id = payment.entryId
+        payment_transaction_id = payment.entryId
 
         payment_method_parameters = {
             'type': 'DIRECT_DEBIT',
             'direct_debit': {
                 'channel_code': in_data.channelCode,
                 'channel_properties': {
-                    'success_return_url': f'{self.__xendit_callback_url}?eventId={in_data.eventId}&paymentTransactionId={transaction_id}',
+                    'success_return_url': f'{self.__xendit_callback_url}?eventId={in_data.eventId}&paymentTransactionId={payment_transaction_id}',
                     'failure_return_url': in_data.failureReturnUrl,
                     'email': in_data.email,
                 },
@@ -78,14 +91,14 @@ class PaymentUsecase:
 
         try:
             # Create Payment Request
-            api_response = api_instance.create_payment_request(
+            api_response = self.xendit_api_instance.create_payment_request(
                 idempotency_key=idempotency_key, payment_request_parameters=payment_request_parameters
             )
-
-            return PaymentRequestOut(
+            payment_request_id = api_response.id
+            payment_request_out = PaymentRequestOut(
                 createDate=api_response.created,
                 paymentUrl=api_response.actions[0].url,
-                paymentRequestId=api_response.id,
+                paymentRequestId=payment_request_id,
                 referenceId=api_response.reference_id,
             )
 
@@ -95,24 +108,42 @@ class PaymentUsecase:
 
             return JSONResponse(status_code=HTTPStatus.BAD_REQUEST, content={'message': message})
 
-    def e_wallet_payment_request(self, in_data: EWalletPaymentIn) -> PaymentRequestOut:
-        xendit.set_api_key(self.__xendit_api_key)
+        payment_transaction_in = PaymentTransactionIn(
+            paymentRequestId=payment_request_id,
+        )
+        status, _, message = self.__payment_storage_gateway.update_payment_transaction(
+            payment_transaction_id, payment_transaction_in
+        )
+        if status != HTTPStatus.OK:
+            return JSONResponse(status_code=status, content={'message': message})
 
-        api_client = xendit.ApiClient()
-        api_instance = PaymentRequestApi(api_client)
+        return payment_request_out
 
+    def e_wallet_payment_request(self, in_data: EWalletPaymentIn, registration: Registration) -> PaymentRequestOut:
+        """
+        Create an e-wallet payment request
+
+        Arguments:
+            in_data -- E-wallet payment request data
+            registration -- Registration data
+
+        Returns:
+            PaymentRequestOut -- Payment request details
+        """
         idempotency_key = str(uuid4())
         reference_id = in_data.referenceId
+
         payment_transaction_in = PaymentTransactionIn(
             price=in_data.amount,
             transactionStatus=TransactionStatus.PENDING,
             eventId=in_data.eventId,
+            registrationData=registration,
         )
         status, payment, message = self.__payment_storage_gateway.create_payment(payment_transaction_in)
         if status != HTTPStatus.OK:
             return JSONResponse(status_code=status, content={'message': message})
 
-        transaction_id = payment.entryId
+        payment_transaction_id = payment.entryId
 
         payment_request_parameters = {
             'country': 'PH',
@@ -123,7 +154,7 @@ class PaymentUsecase:
                 'type': 'EWALLET',
                 'ewallet': {
                     'channel_properties': {
-                        'success_return_url': f'{self.__xendit_callback_url}?eventId={in_data.eventId}&paymentTransactionId={transaction_id}',
+                        'success_return_url': f'{self.__xendit_callback_url}?eventId={in_data.eventId}&paymentTransactionId={payment_transaction_id}',
                         'failure_return_url': in_data.failureReturnUrl,
                         'cancel_return_url': in_data.cancelReturnUrl,
                     },
@@ -135,10 +166,10 @@ class PaymentUsecase:
 
         try:
             # Create Payment Request
-            api_response = api_instance.create_payment_request(
+            api_response = self.xendit_api_instance.create_payment_request(
                 idempotency_key=idempotency_key, payment_request_parameters=payment_request_parameters
             )
-            return PaymentRequestOut(
+            payment_request_out = PaymentRequestOut(
                 createDate=api_response.created,
                 paymentUrl=api_response.actions[0].url,
                 paymentRequestId=api_response.id,
@@ -150,6 +181,17 @@ class PaymentUsecase:
             logger.info(message)
 
             return JSONResponse(status_code=HTTPStatus.BAD_REQUEST, content={'message': message})
+
+        payment_transaction_in = PaymentTransactionIn(
+            paymentRequestId=api_response.id,
+        )
+        status, _, message = self.__payment_storage_gateway.update_payment_transaction(
+            payment_transaction_id=payment_transaction_id, payment=payment_transaction_in
+        )
+        if status != HTTPStatus.OK:
+            return JSONResponse(status_code=status, content={'message': message})
+
+        return payment_request_out
 
     def get_payment_request_details(self, payment_request_id: str) -> PaymentRequest:
         """
@@ -162,13 +204,9 @@ class PaymentUsecase:
             PaymentRequest -- Payment request details
         """
         try:
-            xendit.set_api_key(self.__xendit_api_key)
-
-            api_client = xendit.ApiClient()
-
-            api_instance = PaymentRequestApi(api_client)
-            payment_request_response = api_instance.get_payment_request_by_id(payment_request_id=payment_request_id)
-
+            payment_request_response = self.xendit_api_instance.get_payment_request_by_id(
+                payment_request_id=payment_request_id
+            )
             return payment_request_response
 
         except xendit.XenditSdkException as e:

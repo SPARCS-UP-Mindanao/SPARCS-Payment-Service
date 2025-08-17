@@ -13,6 +13,7 @@ class PaymentStorageGateway:
         self.__callback_base_url = os.environ.get('CALLBACK_BASE_URL')
         self.__create_payment_url = f'{self.__callback_base_url}/payments'
         self.__get_pending_payments_url = f'{self.__callback_base_url}/payments/pending'
+        self.__update_payment_url = f'{self.__callback_base_url}/payments'
 
     def create_payment(self, payment: PaymentTransactionIn) -> Tuple[HTTPStatus, PaymentTransactionOut, str]:
         try:
@@ -50,4 +51,33 @@ class PaymentStorageGateway:
 
         except Exception as e:
             logger.error(f'Error getting pending payments: {e}')
+            return HTTPStatus.INTERNAL_SERVER_ERROR, None, str(e)
+
+    def update_payment_transaction(
+        self, payment_transaction_id: str, payment: PaymentTransactionIn
+    ) -> Tuple[HTTPStatus, PaymentTransactionOut, str]:
+        """
+        Update a payment transaction by ID
+
+        Args:
+            payment_transaction_id (str): The ID of the payment transaction to update
+            payment (PaymentTransactionIn): The updated payment transaction data
+
+        Returns:
+            Tuple[HTTPStatus, PaymentTransactionOut, str]: Status code, updated payment transaction, error message
+        """
+        try:
+            payment_dict = payment.dict()
+            update_url = f'{self.__update_payment_url}/{payment_transaction_id}'
+            response = requests.put(update_url, json=payment_dict)
+            result = response.json()
+
+            if response.status_code != HTTPStatus.OK:
+                return response.status_code, None, result.get('message', 'Unknown error')
+
+            logger.info(f'Payment Transaction {payment_transaction_id} Successfully Updated')
+            return HTTPStatus.OK, PaymentTransactionOut(**result), None
+
+        except Exception as e:
+            logger.error(f'Error updating payment transaction {payment_transaction_id}: {e}')
             return HTTPStatus.INTERNAL_SERVER_ERROR, None, str(e)

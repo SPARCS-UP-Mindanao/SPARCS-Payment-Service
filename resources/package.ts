@@ -5,7 +5,7 @@ const packageConfig = {
         "!.serverless/**",
         "!venv/**",
         "!node_modules/**",
-        "!.idea/**", 
+        "!.idea/**",
         "!node_modules**",
         "!package.json",
         "!package-lock.json",
