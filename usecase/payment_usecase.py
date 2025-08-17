@@ -5,6 +5,7 @@ from uuid import uuid4
 import xendit
 from starlette.responses import JSONResponse
 from xendit.apis import PaymentRequestApi
+from xendit.payment_request.model import PaymentRequest
 
 from external.payment_storage_gateway import PaymentStorageGateway
 from model.payment.payment import (
@@ -146,6 +147,32 @@ class PaymentUsecase:
 
         except xendit.XenditSdkException as e:
             message = f'Exception when calling PaymentRequestApi->create_payment_request: {e.errorMessage}'
+            logger.info(message)
+
+            return JSONResponse(status_code=HTTPStatus.BAD_REQUEST, content={'message': message})
+
+    def get_payment_request_details(self, payment_request_id: str) -> PaymentRequest:
+        """
+        Get payment request details from Xendit
+
+        Arguments:
+            payment_request_id -- Payment request ID
+
+        Returns:
+            PaymentRequest -- Payment request details
+        """
+        try:
+            xendit.set_api_key(self.__xendit_api_key)
+
+            api_client = xendit.ApiClient()
+
+            api_instance = PaymentRequestApi(api_client)
+            payment_request_response = api_instance.get_payment_request_by_id(payment_request_id=payment_request_id)
+
+            return payment_request_response
+
+        except xendit.XenditSdkException as e:
+            message = f'Exception when calling PaymentRequestApi->get_payment_request_by_id: {e.errorMessage}'
             logger.info(message)
 
             return JSONResponse(status_code=HTTPStatus.BAD_REQUEST, content={'message': message})

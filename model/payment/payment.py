@@ -17,6 +17,16 @@ class PaymentTransactionIn(BaseModel):
     price: float = Field(None, title='Price')
     transactionStatus: TransactionStatus = Field(None, title='Transaction Status')
     eventId: Optional[str] = Field(None, title='Event ID')
+    paymentRequestId: Optional[str] = Field(None, title='Payment Request ID')
+
+    # Registration Data
+    firstName: Optional[str] = Field(None, title='First Name')
+    lastName: Optional[str] = Field(None, title='Last Name')
+    contactNumber: Optional[str] = Field(None, title='Contact Number')
+    careerStatus: Optional[str] = Field(None, title='Career Status')
+    yearsOfExperience: Optional[str] = Field(None, title='Years of Experience')
+    organization: Optional[str] = Field(None, title='Organization')
+    title: Optional[str] = Field(None, title='Title')
 
 
 class PaymentTransactionOut(PaymentTransactionIn):

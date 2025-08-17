@@ -1,4 +1,5 @@
 from decimal import Decimal
+
 from fastapi.responses import JSONResponse
 from sympy import Eq, solve, symbols
 
