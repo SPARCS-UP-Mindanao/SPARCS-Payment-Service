@@ -39,6 +39,8 @@ class DirectDebitPaymentIn(BaseModel):
     failureReturnUrl: str = Field(..., title='Failure Return URL')
     eventId: Optional[str] = Field(None, title='Event ID')
 
+    registrationData: Registration = Field(..., title='Registration Data')
+
 
 class PaymentRequestOut(BaseModel):
     class Config:
@@ -61,3 +63,5 @@ class EWalletPaymentIn(BaseModel):
     amount: float = Field(..., title='Amount')
     channelCode: EWalletChannels = Field(..., title='Channel Code')
     eventId: Optional[str] = Field(None, title='Event ID')
+
+    registrationData: Registration = Field(..., title='Registration Data')

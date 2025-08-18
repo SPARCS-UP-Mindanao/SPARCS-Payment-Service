@@ -1,6 +1,6 @@
 import os
 from http import HTTPStatus
-from typing import Tuple
+from typing import List, Tuple, Union
 
 import requests
 
@@ -19,18 +19,27 @@ class PaymentStorageGateway:
         try:
             payment_dict = payment.dict()
             response = requests.post(self.__create_payment_url, json=payment_dict)
-            result = response.json()
+            result = response.json() if response.content else {}
             if response.status_code != HTTPStatus.OK:
-                return response.status_code, None, result
+                error_message = (
+                    result.get('message', f'HTTP {response.status_code}: {response.text}')
+                    if isinstance(result, dict)
+                    else str(result)
+                )
+                return response.status_code, None, error_message
 
             logger.info('Payment Transaction Successfully Added')
             return HTTPStatus.OK, PaymentTransactionOut(**result), None
+
+        except ValueError as json_error:
+            logger.error(f'Invalid JSON response from payment API: {json_error}. Response: {response.text}')
+            return HTTPStatus.BAD_GATEWAY, None, f'Invalid response from payment service: {response.text}'
 
         except Exception as e:
             logger.error(f'Error creating payment: {e}')
             return HTTPStatus.INTERNAL_SERVER_ERROR, None, str(e)
 
-    def get_pending_payment_transactions(self) -> Tuple[HTTPStatus, list[PaymentTransactionOut], str]:
+    def get_pending_payment_transactions(self) -> Tuple[HTTPStatus, Union[List[PaymentTransactionOut], None], str]:
         """
         Get pending payment transactions
 
@@ -39,15 +48,23 @@ class PaymentStorageGateway:
         """
         try:
             response = requests.get(self.__get_pending_payments_url)
-            result = response.json()
-
+            result = response.json() if response.content else []
             if response.status_code != HTTPStatus.OK:
-                return response.status_code, None, result.get('message', 'Unknown error')
+                error_message = (
+                    result.get('message', f'HTTP {response.status_code}: {response.text}')
+                    if isinstance(result, dict)
+                    else str(result)
+                )
+                return response.status_code, None, error_message
 
             # Convert response to list of PaymentTransactionOut objects
             pending_payments = [PaymentTransactionOut(**payment) for payment in result]
             logger.info(f'Successfully retrieved {len(pending_payments)} pending payments')
             return HTTPStatus.OK, pending_payments, None
+
+        except ValueError as json_error:
+            logger.error(f'Invalid JSON response from payment API: {json_error}. Response: {response.text}')
+            return HTTPStatus.BAD_GATEWAY, None, f'Invalid response from payment service: {response.text}'
 
         except Exception as e:
             logger.error(f'Error getting pending payments: {e}')
@@ -55,7 +72,7 @@ class PaymentStorageGateway:
 
     def update_payment_transaction(
         self, payment_transaction_id: str, payment: PaymentTransactionIn
-    ) -> Tuple[HTTPStatus, PaymentTransactionOut, str]:
+    ) -> Tuple[HTTPStatus, Union[PaymentTransactionOut, None], str]:
         """
         Update a payment transaction by ID
 
@@ -70,13 +87,25 @@ class PaymentStorageGateway:
             payment_dict = payment.dict()
             update_url = f'{self.__update_payment_url}/{payment_transaction_id}'
             response = requests.put(update_url, json=payment_dict)
-            result = response.json()
+
+            result = response.json() if response.content else {}
+
+            logger.info(f'Sent request to update payment transaction {payment_transaction_id}: {payment_dict}')
 
             if response.status_code != HTTPStatus.OK:
-                return response.status_code, None, result.get('message', 'Unknown error')
+                error_message = (
+                    result.get('message', f'HTTP {response.status_code}: {response.text}')
+                    if isinstance(result, dict)
+                    else str(result)
+                )
+                return response.status_code, None, error_message
 
             logger.info(f'Payment Transaction {payment_transaction_id} Successfully Updated')
             return HTTPStatus.OK, PaymentTransactionOut(**result), None
+
+        except ValueError as json_error:
+            logger.error(f'Invalid JSON response from payment API: {json_error}. Response: {response.text}')
+            return HTTPStatus.BAD_GATEWAY, None, f'Invalid response from payment service: {response.text}'
 
         except Exception as e:
             logger.error(f'Error updating payment transaction {payment_transaction_id}: {e}')

@@ -15,7 +15,6 @@ from model.payment.payment import (
     PaymentTransactionIn,
     TransactionStatus,
 )
-from model.registrations.registration import Registration
 from utils.logger import logger
 from utils.utils import Utils
 
@@ -33,19 +32,17 @@ class PaymentUsecase:
         api_client = xendit.ApiClient()
         self.xendit_api_instance = PaymentRequestApi(api_client)
 
-    def direct_debit_payment_request(
-        self, in_data: DirectDebitPaymentIn, registration: Registration
-    ) -> PaymentRequestOut:
+    def direct_debit_payment_request(self, in_data: DirectDebitPaymentIn) -> PaymentRequestOut:
         """
         Create a direct debit payment request
 
         Arguments:
             in_data -- Direct debit payment request data
-            registration -- Registration data
 
         Returns:
             PaymentRequestOut -- Payment request details
         """
+        registration = in_data.registrationData
         payment_transaction_in = PaymentTransactionIn(
             registrationData=registration,
             price=in_data.amount,
@@ -108,9 +105,7 @@ class PaymentUsecase:
 
             return JSONResponse(status_code=HTTPStatus.BAD_REQUEST, content={'message': message})
 
-        payment_transaction_in = PaymentTransactionIn(
-            paymentRequestId=payment_request_id,
-        )
+        payment_transaction_in.paymentRequestId = api_response.id
         status, _, message = self.__payment_storage_gateway.update_payment_transaction(
             payment_transaction_id, payment_transaction_in
         )
@@ -119,19 +114,19 @@ class PaymentUsecase:
 
         return payment_request_out
 
-    def e_wallet_payment_request(self, in_data: EWalletPaymentIn, registration: Registration) -> PaymentRequestOut:
+    def e_wallet_payment_request(self, in_data: EWalletPaymentIn) -> PaymentRequestOut:
         """
         Create an e-wallet payment request
 
         Arguments:
             in_data -- E-wallet payment request data
-            registration -- Registration data
 
         Returns:
             PaymentRequestOut -- Payment request details
         """
         idempotency_key = str(uuid4())
         reference_id = in_data.referenceId
+        registration = in_data.registrationData
 
         payment_transaction_in = PaymentTransactionIn(
             price=in_data.amount,
@@ -182,9 +177,7 @@ class PaymentUsecase:
 
             return JSONResponse(status_code=HTTPStatus.BAD_REQUEST, content={'message': message})
 
-        payment_transaction_in = PaymentTransactionIn(
-            paymentRequestId=api_response.id,
-        )
+        payment_transaction_in.paymentRequestId = api_response.id
         status, _, message = self.__payment_storage_gateway.update_payment_transaction(
             payment_transaction_id=payment_transaction_id, payment=payment_transaction_in
         )

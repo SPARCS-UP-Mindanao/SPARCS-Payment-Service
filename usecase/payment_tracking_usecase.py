@@ -22,7 +22,7 @@ class PaymentTrackingUsecase:
     def _send_payment_status_update_to_queue(self, payment: PaymentTransactionOut, status: TransactionStatus):
         """Send payment status update message to SQS queue"""
         try:
-            logger.info(f'Sending payment status update to SQS: {payment}')
+            logger.info(f'Sending payment status update to SQS: Transaction Status {status} for Payment {payment}')
 
             message_body = {
                 'registration_details': payment.dict(),
@@ -63,31 +63,27 @@ class PaymentTrackingUsecase:
             payment_request_details = self.payment_usecase.get_payment_request_details(
                 payment_request_id=payment.paymentRequestId,
             )
+            payment_request_status = str(payment_request_details.status)
 
-            if (
-                payment_request_details.status in PaymentRequestConstants.PENDING_STATUSES
-                or not payment_request_details.status
-            ):
+            if payment_request_status in PaymentRequestConstants.PENDING_STATUSES or not payment_request_status:
                 logger.info(f'Payment {payment.entryId} is still pending')
                 continue
 
             transaction_status = TransactionStatus.PENDING
 
-            if payment_request_details.status in PaymentRequestConstants.SUCCESS_STATUSES:
+            if payment_request_status in PaymentRequestConstants.SUCCESS_STATUSES:
                 logger.info(f'Payment {payment.entryId} succeeded')
                 transaction_status = TransactionStatus.SUCCESS
 
-            elif payment_request_details.status in PaymentRequestConstants.ERROR_STATUSES:
+            elif payment_request_status in PaymentRequestConstants.ERROR_STATUSES:
                 logger.info(f'Payment {payment.entryId} failed')
                 transaction_status = TransactionStatus.FAILED
 
             else:
-                logger.error(f'Payment {payment.entryId} has an unknown status: {payment_request_details.status}')
+                logger.error(f'Payment {payment.entryId} has an unknown status: {payment_request_status}')
                 continue
 
             result = self._send_payment_status_update_to_queue(payment, transaction_status)
             if not result:
                 logger.error(f'Failed to send payment status update to SQS: {payment.entryId}')
                 continue
-
-            logger.info(f'Successfully sent payment status update to SQS: {payment.entryId}')
