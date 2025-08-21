@@ -49,13 +49,70 @@ const serverlessConfiguration: AWS = {
       "CALLBACK_BASE_URL": "${ssm:/techtix/callback-base-url-${self:custom.stage}}"
     },
     "logs": {
-      "restApi": true
+      "restApi": {
+        role: {
+          "Fn::GetAtt": [
+            'ApiGatewayCloudWatchRole', 'Arn'
+          ]
+        }
+      }
     }
   },
   "functions": {
     ...functionConfig
   },
-  "plugins": [
+  resources: {
+    Resources: {
+      ApiGatewayCloudWatchRole: {
+        Type: 'AWS::IAM::Role',
+        Properties: {
+          RoleName: 'serverlessApiGatewayCloudWatchRole-${self:custom.serviceName}-${self:custom.stage}',
+          AssumeRolePolicyDocument: {
+            Version: '2012-10-17',
+            Statement: [
+              {
+                Effect: 'Allow',
+                Principal: {
+                  Service: 'apigateway.amazonaws.com',
+                },
+                Action: 'sts:AssumeRole',
+              },
+            ],
+          },
+          Policies: [
+            {
+              PolicyName: 'AllowCloudWatchLogs',
+              PolicyDocument: {
+                Version: '2012-10-17',
+                Statement: [
+                  {
+                    Effect: 'Allow',
+                    Action: [
+                      'logs:CreateLogGroup',
+                      'logs:CreateLogStream',
+                      'logs:DescribeLogGroups',
+                      'logs:DescribeLogStreams',
+                      'logs:PutLogEvents',
+                    ],
+                    Resource: '*',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      },
+    },
+    Outputs: {
+      ApiGatewayCloudWatchRoleArn: {
+        Value: { 'Fn::GetAtt': ['ApiGatewayCloudWatchRole', 'Arn'] },
+        Export: {
+          Name: 'ApiGatewayCloudWatchRole-${self:custom.serviceName}-${self:custom.stage}',
+        },
+      },
+    },
+  },
+  plugins: [
     "serverless-better-credentials",
     "serverless-python-requirements",
     "serverless-iam-roles-per-function"
