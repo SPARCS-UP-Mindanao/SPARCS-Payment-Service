@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import Union, Optional, TypeAlias
+from typing import Optional, TypeAlias, Union
 
 from pydantic import BaseModel, Extra, Field
 from typing_extensions import Annotated
@@ -9,7 +9,6 @@ from model.payment.payment_constants import (
     EWalletChannels,
     PaymentMethod,
 )
-
 
 Price: TypeAlias = Annotated[Decimal, Field(decimal_places=2)]
 

@@ -1,9 +1,7 @@
 const packageConfig = {
     'patterns': [
         "setup/**",
-        "src/**",
         "!requirements.txt",
-        "src/**",
         "!.serverless/**",
         "!venv/**",
         "!node_modules/**",
@@ -12,7 +10,31 @@ const packageConfig = {
         "!package.json",
         "!package-lock.json",
         "!Pipfile",
-        "!Pipfile.lock"
+        "!Pipfile.lock",
+        "!log.txt",
+        "!README.md",
+        "!ruff.toml",
+        "!scripts/**",
+        "!resources/**",
+        "!__pycache__/**",
+        "!.github",
+        "!.gitignore",
+        "!.pre-commit-config.yaml",
+        "!.prettierignore",
+        "!.prettierrc.json",
+        "!.prettierignore",
+        "!.ruff_cache",
+        "!.vscode",
+        "!scripts",
+        "!.env",
+        "!.isort.cfg",
+        "!ruff.toml",
+        "!serverless.ts",
+        "!serverless-tsconfig.json",
+        "!tsconfig.json",
+        "!.pre-commit-config.yaml",
+        "!.python-version",
+        "!README.md"
     ]
 }
 
