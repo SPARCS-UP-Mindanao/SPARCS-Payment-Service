@@ -48,7 +48,8 @@ const serverlessConfiguration: AWS = {
       "REGION": "${self:provider.region}",
       "STAGE": "${self:custom.stage}",
       "XENDIT_API_KEY_SECRET_NAME": "${self:custom.stage}-xendit-api-key",
-      "CALLBACK_BASE_URL": "${ssm:/techtix/callback-base-url-${self:custom.stage}}"
+      "CALLBACK_BASE_URL": "${ssm:/techtix/callback-base-url-${self:custom.stage}}",
+      "SQS_QUEUE_URL": "${self:custom.sqsQueueUrl}"
     },
     "logs": {
       "restApi": {
