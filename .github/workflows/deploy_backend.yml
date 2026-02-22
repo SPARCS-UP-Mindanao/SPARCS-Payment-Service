@@ -1,9 +1,13 @@
 name: Deploy SPARCS Payment Service
 on:
-  push:
-    branches:
-      - main
-      - stage
+  workflow_run:
+    workflows: ["Payment Service Formatting Check on Push"]
+    types:
+      - completed
+  # push:
+  #   branches:
+  #     - main
+  #     - stage
 
 permissions:
   id-token: write
