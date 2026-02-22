@@ -5,6 +5,7 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr, Extra, Field
 
 from model.payment.payment_constants import DirectDebitChannels, EWalletChannels
+from model.registrations.registration import Registration
 
 
 class TransactionStatus(str, Enum):
@@ -17,6 +18,8 @@ class PaymentTransactionIn(BaseModel):
     price: float = Field(None, title='Price')
     transactionStatus: TransactionStatus = Field(None, title='Transaction Status')
     eventId: Optional[str] = Field(None, title='Event ID')
+    paymentRequestId: Optional[str] = Field(None, title='Payment Request ID')
+    registrationData: Optional[Registration] = Field(None, title='Registration Data')
 
 
 class PaymentTransactionOut(PaymentTransactionIn):
@@ -35,6 +38,8 @@ class DirectDebitPaymentIn(BaseModel):
     successReturnUrl: str = Field(..., title='Success Return URL')
     failureReturnUrl: str = Field(..., title='Failure Return URL')
     eventId: Optional[str] = Field(None, title='Event ID')
+
+    registrationData: Registration = Field(..., title='Registration Data')
 
 
 class PaymentRequestOut(BaseModel):
@@ -58,3 +63,5 @@ class EWalletPaymentIn(BaseModel):
     amount: float = Field(..., title='Amount')
     channelCode: EWalletChannels = Field(..., title='Channel Code')
     eventId: Optional[str] = Field(None, title='Event ID')
+
+    registrationData: Registration = Field(..., title='Registration Data')

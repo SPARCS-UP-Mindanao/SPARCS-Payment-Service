@@ -7,6 +7,7 @@ from xendit.apis import CustomerApi, PaymentMethodApi, PaymentRequestApi
 from xendit.customer.model.country_code import CountryCode
 from xendit.customer.model.customer_request import CustomerRequest
 from xendit.customer.model.individual_detail import IndividualDetail
+from xendit.payment_request.model import PaymentRequestStatus
 
 
 def ewallet_payment_request():
@@ -49,6 +50,12 @@ def ewallet_payment_request():
         pprint(api_response)
     except xendit.XenditSdkException as e:
         print('Exception when calling PaymentRequestApi->create_payment_request: %s\n' % e)
+
+    api_response = api_instance.get_payment_request_by_id(payment_request_id='pr-2b4932e0-2991-4082-9730-d391bfcc506a')
+    print(api_response)
+
+    payment_request_status: PaymentRequestStatus = api_response.status
+    print('Status: ', payment_request_status.value)
 
 
 def create_customer(email: str, given_names: str, surname: str, nationality: CountryCode):
