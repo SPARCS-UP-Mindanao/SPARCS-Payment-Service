@@ -12,16 +12,21 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Set environment based on the branch being pushed to (main for prod, stage for dev)
+    environment: ${{ github.ref == 'refs/heads/main' && 'dev' || 'prod' }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set ARN for Role to Assume
+      - name: Set deployment configuration
+        id: config
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "stage=prod" >> $GITHUB_OUTPUT
             echo "AWS_OIDC_ROLE_ARN=${{ secrets.AWS_OIDC_ROLE_ARN_PROD }}" >> $GITHUB_ENV
-          elif [[ "${{ github.ref }}" == "refs/heads/stage" ]]; then
+          else
+            echo "stage=dev" >> $GITHUB_OUTPUT
             echo "AWS_OIDC_ROLE_ARN=${{ secrets.AWS_OIDC_ROLE_ARN_STAGE }}" >> $GITHUB_ENV
           fi
 
@@ -49,9 +54,4 @@ jobs:
           npm install -g serverless@3.40.0
 
       - name: Deploy with Serverless
-        run: |
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-          sls deploy --stage prod --verbose
-          elif [[ "${{ github.ref }}" == "refs/heads/stage" ]]; then
-          sls deploy --stage dev --verbose
-          fi
+        run: sls deploy --stage ${{ steps.config.outputs.stage }} --verbose
