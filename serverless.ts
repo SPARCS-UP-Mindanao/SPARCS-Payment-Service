@@ -9,9 +9,9 @@ const serverlessConfiguration: AWS = {
     serviceName: "paymentService",
     stage: "${opt:stage, self:provider.stage}",
     sqsQueueArn:
-      "arn:aws:sqs:${aws:region}:${aws:accountId}:${self:custom.stage}-durianpy-events-payment-queue.fifo",
+      "arn:aws:sqs:${aws:region}:${aws:accountId}:${self:custom.stage}-${self:custom.projectName}-events-payment-queue.fifo",
     sqsQueueUrl:
-      "https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/${self:custom.stage}-durianpy-events-payment-queue.fifo",
+      "https://sqs.${aws:region}.amazonaws.com/${aws:accountId}/${self:custom.stage}-${self:custom.projectName}-events-payment-queue.fifo",
     pythonRequirements: {
       dockerizePip: "non-linux",
       noDeploy: ["boto3", "botocore"],
