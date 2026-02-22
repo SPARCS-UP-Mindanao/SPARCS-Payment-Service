@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-Cython = "==0.29.33"  # Add this for mac os users
+Cython = "==0.29.33"
 asgiref = "==3.4.1"
 fastapi = "==0.66.0"
 mangum = "==0.11.0"
