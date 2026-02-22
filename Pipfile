@@ -19,7 +19,6 @@ sympy = "==1.12"
 requests = "==2.32.3"
 boto3 = "==1.22.7"
 
-
 [dev-packages]
 uvicorn = "==0.14.0"
 ruff = "==0.0.47"
