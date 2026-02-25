@@ -102,6 +102,26 @@ const serverlessConfiguration: AWS = {
           ],
         },
       },
+      PaymentServiceApiEndpointParameter: {
+        Type: "AWS::SSM::Parameter",
+        Properties: {
+          Name: "/techtix/payments-api-url-${self:custom.stage}",
+          Type: "String",
+          Value: {
+            "Fn::Join": [
+              "",
+              [
+                "https://",
+                { Ref: "ApiGatewayRestApi" },
+                ".execute-api.",
+                { Ref: "AWS::Region" },
+                ".amazonaws.com/",
+                "${self:provider.stage}",
+              ],
+            ],
+          },
+        },
+      },
     },
     Outputs: {
       ApiGatewayCloudWatchRoleArn: {
