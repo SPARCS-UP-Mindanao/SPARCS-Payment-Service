@@ -23,7 +23,6 @@ class PaymentServiceConfigAssembler:
         self.__region = 'ap-southeast-1'
         self.__ssm_client = boto3.client('ssm', region_name=self.__region)
         self.__secrets_client = boto3.client('secretsmanager', region_name=self.__region)
-        self.__sts_client = boto3.client('sts', region_name=self.__region)
         self.__aws_account_id = self.__sts_client.get_caller_identity()['Account']
         self.__base_dir = os.getcwd()
 
@@ -106,7 +105,7 @@ class PaymentServiceConfigAssembler:
         callback_base_url = ''
 
         if self.__input_environment == 'test' or stage == 'test':
-            callback_base_url = 'http://localhost:3000/callback'  # Placeholder for local testing
+            callback_base_url = 'http://localhost:5173/'
         else:
             parameter_store_prefix = '/techtix'
 
