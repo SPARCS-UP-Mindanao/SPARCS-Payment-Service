@@ -102,3 +102,78 @@ _Image credit to [Thang Chung under MIT terms](https://github.com/thangchung/blo
 - [FastAPI](https://fastapi.tiangolo.com/)
 - [Serverless Framework Documentation](https://www.serverless.com/framework/docs)
 - [Clean Coder Blog](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+---
+
+# AWS, Auth & Readability QA Lead
+
+1) AWS SSO — configure and verify (profile: `techtix`)
+
+```powershell
+aws configure sso --profile techtix      # run interactively, supply SSO URL/region/account/role
+aws sso login --profile techtix
+aws sts get-caller-identity --profile techtix
+```
+
+Set runtime profile for processes:
+
+```powershell
+export AWS_PROFILE=techtix
+```
+
+Confirm SSM access (example):
+
+```powershell
+aws ssm get-parameter --name /techtix/callback-base-url-dev --region ap-southeast-1 --profile techtix
+```
+
+2) Required environment variables (set these before running)
+
+- `REGION`=ap-southeast-1          # AWS region for boto3
+- `STAGE`=dev                      # deployment stage
+- `XENDIT_API_KEY_SECRET_NAME`     # SSM name containing Xendit API key
+- `CALLBACK_BASE_URL`              # base URL for payment/persistence endpoints
+- `SQS_QUEUE_URL`                  # SQS FIFO queue URL for status messages
+- `LOG_LEVEL`=INFO                 # optional, default DEBUG
+
+3) Secrets access
+
+- Runtime: call `Utils.get_secret(<SSM_NAME>)` (SSM Parameter Store, WithDecryption=True).
+- For local scripts only: `XENDIT_API_KEY_SECRET` may hold plaintext API key (avoid committing).
+
+4) Lightweight wrappers
+
+- `Utils.get_secret(name)` — central SSM reader; use for all secrets.
+- `PaymentStorageGateway` — HTTP adapter for persistence; all external HTTP calls go here.
+- Recommendation: implement `PaymentProvider` interface and `XenditAdapter`, then inject into `usecase/payment_usecase.py`.
+
+5) Cross-repo fixes (apply in repo)
+
+- Standardize parameter prefix to `/techtix`.
+- Update `scripts/generate-env.py` to accept `--region` and initialize an STS client.
+- Use `XENDIT_API_KEY_SECRET_NAME` at runtime; reserve plaintext env keys for local helper scripts only.
+
+6) Run (minimal, sequential)
+
+
+### prepare
+```powershell
+pip install uv
+uv sync
+```
+### authenticate
+```powershell
+aws sso login --profile techtix
+export AWS_PROFILE=techtix
+```
+
+### generate .env and run
+```powershell
+python scripts/generate-env.py -s dev
+python main.py
+```
+
+7) Verify secret retrieval (quick):
+
+```powershell
+python -c "from utils.utils import Utils; print(Utils.get_secret('dev-xendit-api-key'))"
+```
