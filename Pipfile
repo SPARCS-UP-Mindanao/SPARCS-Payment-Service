@@ -14,7 +14,7 @@ lambda-warmer-py = "==0.6.0"
 python-dotenv = "==1.0.0"
 pydantic = {version = "<2", extras = ["email"]}
 lambda-decorators = "==0.6.0"
-xendit-python = {git = "https://github.com/xendit/xendit-python.git"}
+xendit-python = { git = "https://github.com/xendit/xendit-python.git", ref = "master" }
 sympy = "==1.12"
 requests = "==2.32.3"
 boto3 = "==1.22.7"
