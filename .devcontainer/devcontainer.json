@@ -9,7 +9,7 @@
       "version": "20"
     }
   },
-  "postCreateCommand": "pip install pipenv && npm install && pipenv install",
+  "postCreateCommand": "pip install pipenv && npm install && pipenv install --dev",
   "customizations": {
     "vscode": {
       "extensions": [
