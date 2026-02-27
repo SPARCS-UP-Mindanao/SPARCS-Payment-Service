@@ -1,4 +1,4 @@
-# Serverless API Starter
+# SPARCS Payment Service
 
 A serverless REST API implemented with Clean Architecture and Domain Driven Design.
 
@@ -10,120 +10,87 @@ This project follows the [clean architecture style](http://blog.thedigitalcatonl
 
 _Image credit to [Thang Chung under MIT terms](https://github.com/thangchung/blog-core)_
 
-### Most Important Rule:
+## Folder Structure 
+    .devcontainer/   # DevContainer configuration for consistent local setup
+    .git/            # Git metadata
+    .github/         # GitHub workflows and repo config
+    constants/       # Application-wide constant values
+    controller/      # Request handlers / API controllers
+    external/        # Integrations with external services (e.g., AWS, third-party APIs)
+    functions/       # Reusable business-related functions
+    model/           # Data models and schemas
+    resources/       # Static resources and configuration assets
+    scripts/         # Utility and maintenance scripts
+    usecase/         # Core business use cases and workflows
+    utils/           # General helper utilities
 
-> Source code dependencies can only point inward. Nothing in an inner circle can know anything about something in an outer circle. In particular, the name of something declared in an outer circle must not be mentioned by the code in an inner circle. That includes functions and classes, variables, or any other named software entity.
+## Best Practices
+### Naming Conventions
+Follow these conventions to keep the codebase consistent and readable:
+- Classes: PascalCase
+    - model/ – domain and data models
+    - usecase/ – business use case classes
+    - functions/ – function-based service classes
+- Files: snake_case.py
+    - Example: payment.py, transaction.py
+- Variables & Functions: snake_case
+    - Example: payment_id, process_payment(), create_payment()
+- Constants: UPPER_SNAKE_CASE
+    - Example: XENDIT_API_KEY_SECRET, CALLBACK_BASE_URL, ONE_TIME_USE
 
-## Setup Local Environment
+## Clean Architecture
 
-1. **Pre-requisites:**
-   - Ensure Python 3.10 is installed
+### Dependencies
 
-2. **Install pipenv:**
-   ```shell
-   pip install pipenv==2023.4.29 --user
-   ```
+Dependencies must follow this direction only:
+```controller -> usecase -> model```
 
-3. **Install Python Dependencies:**
-   ```shell
-   pipenv install
-   ```
+#### Rules
+- Controllers
+    - Handle incoming requests
+    - Call use cases
+    - Contain no business logic
+- Usecases
+    - Contain core business logic
+    - Orchestrate models and operations
+    - Do not depend on controllers
+- Models
+    - Represent domain data and rules
+    - Have no dependencies on higher layers
 
-4. **Activate Virtual Environment:**
-   ```shell
-   pipenv shell
-   ```
+### Layer Responsibilities
+- Controller (```controller/```)
+    - Handles HTTP or external requests
+    - Validates and parses input
+    - Delegates execution to use cases
+    - Formats and returns responses
+    - Contains no business logic
 
-5. **Add Environment Variables:**
-    -  Add the `.env` file provided to you in the `backend` directory
+- Usecases (```usecase/```)
+    - Implements core business rules
+    - Coordinates workflows and decisions
+    - Calls models and helper functions
+    - Remains independent of delivery mechanisms (HTTP, CLI, etc.)
 
-## Run Locally
+- Models (```model/```)
+    - Defines domain data structures
+    - Enforces domain-level rules and validations
+    - Has no knowledge of controllers or use cases
 
-1. **Activate Virtual Environment:**
-   ```shell
-   pipenv shell
-   ```
+## AWS SSO Authentication
 
-2. **Start Local Server:**
-   ```shell
-   uvicorn main:app --reload --log-level debug --env-file .env
-   ```
+1) AWS SSO — configure and verify 
 
-## Setup AWS CLI
-
-1. **Download and Install AWS CLI:**
-   - [AWS CLI Installation Guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-
-2. **Create AWS Profile:**
-   ```shell
-   aws configure --profile {profile}
-   ```
-
-   - **Input your AWS Access Key ID and AWS Secret Access Key provided to you.**
-   - **Input `ap-southeast-1` for the default region name.**
-   - **Leave blank for the default output format.**
-
-
-## Setup Serverless Framework
-
-1. **Pre-requisites:**
-   - Ensure `Node 14` or later is installed
-
-2. **Install serverless framework:**
-   ```shell
-   npm install -g serverless
-   ```
-
-3. **Install serverless plugins:**
-   ```shell
-   npm install
-   ```
-
-3. **Install Python Requirements Plugin:**
-   ```shell
-   sls plugin install -n serverless-python-requirements
-   ```
-
-## Deploy to AWS
-1. Setup Docker (Only for Non-Linux Users)
-   - [Docker Installation Guide](https://docs.docker.com/engine/install)
-   - Make sure Docker is Running on your Machine
-2.
-   ```shell
-   pipenv shell
-   ```
-3.
-   ```shell
-   serverless deploy --stage 'dev' --aws-profile {profile} --verbose
-   ```
-
-## Resources
-
-- [FastAPI](https://fastapi.tiangolo.com/)
-- [Serverless Framework Documentation](https://www.serverless.com/framework/docs)
-- [Clean Coder Blog](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
----
-
-# AWS, Auth & Readability QA Lead
-
-1) AWS SSO — configure and verify (profile: `techtix`)
-
-```powershell
-aws configure sso --profile techtix      # run interactively, supply SSO URL/region/account/role
-aws sso login --profile techtix
-aws sts get-caller-identity --profile techtix
+```bash
+aws configure sso --profile <profile>      
+aws sso login --profile <profile>
+aws sts get-caller-identity --profile <profile>
 ```
+Follow the prompt to open your browser and authorize your session. Once approved, your terminal will be authenticated and ready to interact with AWS resources.
 
 Set runtime profile for processes:
-
-```powershell
-export AWS_PROFILE=techtix
-```
-
-Confirm SSM access (example):
-
-```powershell
-aws ssm get-parameter --name /techtix/callback-base-url-dev --region ap-southeast-1 --profile techtix
+```bash
+export AWS_PROFILE=<profile>
 ```
 
 2) Required environment variables (set these before running)
@@ -153,27 +120,31 @@ aws ssm get-parameter --name /techtix/callback-base-url-dev --region ap-southeas
 - Use `XENDIT_API_KEY_SECRET_NAME` at runtime; reserve plaintext env keys for local helper scripts only.
 
 6) Run (minimal, sequential)
-
-
-### prepare
-```powershell
-pip install uv
-uv sync
-```
-### authenticate
-```powershell
-aws sso login --profile techtix
-export AWS_PROFILE=techtix
-```
-
 ### generate .env and run
-```powershell
+```bash
 python scripts/generate-env.py -s dev
-python main.py
 ```
 
 7) Verify secret retrieval (quick):
 
-```powershell
+```bash
 python -c "from utils.utils import Utils; print(Utils.get_secret('dev-xendit-api-key'))"
 ```
+
+## Deploy to AWS Lambda
+If the Serverless framework is not yet installed in the container, install it and its plugins first:
+```bash
+npm install -g serverless
+npm install
+```
+Then, deploy the service:
+```bash
+serverless deploy --stage 'dev' --aws-profile 'default'
+```
+**When/Why:** Run this command to deploy the Serverless configuration and Lambda functions to AWS.
+
+## Resources
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)
+- [Serverless Framework Documentation](https://www.serverless.com/framework/docs)
+- [Clean Architecture by Uncle Bob](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+- [Clean Architectures in Python](http://blog.thedigitalcatonline.com/blog/2016/11/14/clean-architectures-in-python-a-step-by-step-example/)
