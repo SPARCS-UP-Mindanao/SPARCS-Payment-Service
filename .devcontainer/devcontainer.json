@@ -7,9 +7,12 @@
     },
     "ghcr.io/devcontainers/features/node:1": {
       "version": "20"
+    },
+    "ghcr.io/devcontainers/features/aws-cli:1.1.2": {
+      
     }
   },
-  "postCreateCommand": "pip install pipenv && npm install && pipenv install",
+  "postCreateCommand": "pip install pipenv && npm install && pipenv install --skip-lock --python 3.10",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -20,5 +23,8 @@
       ]
     }
   },
+  "mounts": [
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.aws,target=/root/.aws,type=bind,consistency=cached"  
+  ],
   "remoteUser": "root"
 }
